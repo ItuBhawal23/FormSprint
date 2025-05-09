@@ -1,0 +1,54 @@
+label {
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  input {
+    padding: 8px 16px;
+    border-radius: 3px;
+    border: 2px solid #03a791;
+    color: #047c6c;
+    &:focus {
+      border: 2px solid #03a791;
+    }
+    &:focus-visible {
+      outline-color: #03a791;
+    }
+  }
+  .fieldWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: self-start;
+    margin-top: 8px;
+    & input {
+      /* width: 450px; */
+      /* width: 100%; */
+    }
+  }
+  .checkboxWrapper {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    & input {
+      margin: 0 10px 0 0;
+      color: #047c6c;
+    }
+    & label {
+      margin-bottom: 0;
+    }
+  }
+  .nameField {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    & > * {
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  .nextIcon{
+    margin-top: 20px;
+    font-size: 30px;
+    cursor: pointer;
+  }
