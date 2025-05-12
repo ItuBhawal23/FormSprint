@@ -1,0 +1,16 @@
+button{
+    background-color: #047c6c;
+    padding: 10px;
+    border: 2px solid #047c6c;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    min-width: 200px;
+    cursor: pointer;
+    margin-top: 16px;
+    &:disabled{
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}

@@ -1,14 +1,8 @@
 import "./App.css";
-// import SignIn from "./forms/sign-in/SignIn";
-import SignUp from "./forms/sign-up/SignUpContainer";
+import CreateForm from "./views/create-form/CreateForm";
 
 function App() {
-  return (
-    <>
-      {/* <SignIn /> */}
-      <SignUp />
-    </>
-  );
+  return <CreateForm />;
 }
 
 export default App;
