@@ -1,43 +1,51 @@
 import { useState } from "react";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
-import { firstFormData, secondFormData } from "../../constants/FormData";
 import FormContainer from "../../components/form-container/FormContainer";
+import type {
+  ContainerFormField,
+  IFormField
+} from "../../interface/FormFieldType";
 
 const CreateForm = () => {
-  const [isFirstForm, setIsFirstForm] = useState<boolean>(true);
+  // formValues = [ [form1 -> 0], [form2 -> 1] ]
 
-  const handleFormNavigation = () => {
-    setIsFirstForm(!isFirstForm);
-  };
+  const [formValues, setFormValues] = useState<
+    Array<Array<IFormField | ContainerFormField>>
+  >([]);
+  const [formIndex, setFormIndex] = useState<number>(0);
+
   return (
     <div>
       {/* first form */}
-      {isFirstForm && (
+      {formIndex === 0 && (
         <FormContainer
-          formFields={firstFormData}
           title="Sign Up"
+          formValues={formValues[formIndex]}
+          updateFormValues={setFormValues}
+          formIndex={formIndex}
+          updateFormIndex={setFormIndex}
           navigateIcon={
             <BsArrowRightCircleFill
               style={{ fontSize: "32px", marginTop: "20px", cursor: "pointer" }}
             />
           }
-          handleFormNavigation={() => handleFormNavigation()}
         />
       )}
 
       {/* second form */}
-      {!isFirstForm && (
+      {formIndex === 1 && (
         <FormContainer
           title="Sign Up"
           subTitle="Password setup"
-          formFields={secondFormData}
-          hasSubmitButton={true}
+          formValues={formValues[formIndex]}
+          updateFormValues={setFormValues}
+          formIndex={formIndex}
+          updateFormIndex={setFormIndex}
           navigateIcon={
             <BsArrowLeftCircleFill
               style={{ fontSize: "32px", marginTop: "20px", cursor: "pointer" }}
             />
           }
-          handleFormNavigation={() => handleFormNavigation()}
         />
       )}
     </div>
