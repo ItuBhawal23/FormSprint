@@ -5,13 +5,14 @@ export type IFormField = {
   type: string;
   isChecked?: boolean;
   value: string | number | boolean | any;
+  isValid: null | boolean;
+  errorMsg: string;
   validate: (
     value: string | number | boolean | any,
     id?: string,
-    // allFields?: Array<IFormField | ContainerFormField>
   ) => {
     isValid: boolean;
-    errMsg: string;
+    errorMessage: string;
   };
 };
 

@@ -23,6 +23,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
         placeholder: "Enter your First Name",
         type: "text",
         value: "",
+        isValid: null,
+        errorMsg: "",
         validate: (value: any) => validateNameField(value)
       },
       {
@@ -31,6 +33,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
         placeholder: "Enter your Last Name",
         type: "text",
         value: "",
+        isValid: null,
+        errorMsg: "",
         validate: (value: any) => validateNameField(value)
       }
     ]
@@ -41,6 +45,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
     placeholder: "Enter your Age",
     type: "number",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value: any, id?: string) => validateNumberInput(value, id)
   },
   {
@@ -49,6 +55,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
     placeholder: "Enter your Email address",
     type: "email",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value) => validateEmail(value)
   },
   {
@@ -57,6 +65,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
     placeholder: "Enter your address",
     type: "text",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value: any) => validateAddress(value)
   },
   {
@@ -65,6 +75,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
     placeholder: "Enter your company",
     type: "text",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value: any) => validateTextField(value)
   },
   {
@@ -73,6 +85,8 @@ export const firstFormData: Array<IFormField | ContainerFormField> = [
     placeholder: "Enter your website",
     type: "url",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value: any) => validateUrl(value)
   }
 ];
@@ -84,6 +98,8 @@ export const secondFormData: IFormField[] = [
     placeholder: "Enter your password",
     type: "password",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value: any) => validatePassword(value)
   },
   {
@@ -92,6 +108,8 @@ export const secondFormData: IFormField[] = [
     placeholder: "Confirm your password",
     type: "password",
     value: "",
+    isValid: null,
+    errorMsg: "",
     validate: (value: any) => validateConfirmPassword(value)
   },
   {
@@ -100,6 +118,8 @@ export const secondFormData: IFormField[] = [
     type: "checkbox",
     value: false,
     isChecked: false,
+    isValid: null,
+    errorMsg: "",
     validate: (value: any) => validateCheckbox(value)
   }
 ];

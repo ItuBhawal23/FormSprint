@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import cloneDeep from "lodash/cloneDeep";
+
 import type {
   ContainerFormField,
   IFormField
@@ -7,8 +7,8 @@ import type {
 import FormField from "../form-field/FormField";
 import styles from "./FormContainer.module.css";
 import Button from "../button/Button";
-import type { ErrorDetailsType } from "../../interface/ErrorType";
 import { firstFormData, secondFormData } from "../../constants/FormData";
+import type { ErrorDetailsType } from "../../interface/ErrorType";
 
 type FormContainerProps = {
   title: string;
@@ -29,7 +29,8 @@ const FormContainer = ({
   updateFormIndex,
   navigateIcon
 }: FormContainerProps) => {
-  const [error, setError] = useState<Record<string, ErrorDetailsType>>({});
+  const allForms = [firstFormData, secondFormData];
+  const [errors, setErrors] = useState<Record<string, ErrorDetailsType>>({});
 
   const getDynamicFields = (
     field: IFormField | ContainerFormField,
@@ -42,8 +43,8 @@ const FormContainer = ({
             <FormField
               key={subIndex}
               field={subField}
-              submitValidation={error[subField.id]}
-              updateFormFieldData={updateFormFieldData}
+              errors={errors[subField.id]}
+              handleBlurEvent={handleFieldBlur}
             />
           ))}
         </div>
@@ -53,17 +54,43 @@ const FormContainer = ({
       <FormField
         key={index}
         field={field as IFormField}
-        submitValidation={error[(field as IFormField).id]}
-        updateFormFieldData={updateFormFieldData}
+        errors={errors[(field as IFormField).id]}
+        handleBlurEvent={handleFieldBlur}
       />
     );
   };
 
-  // This function is Invoked when the form field is modified on blur
-  const updateFormFieldData = (data: IFormField) => {
-    const tempFormFields = [...formFields];
+  const validateFieldOnBlur = (data: IFormField) => {
+    const errorInfo = data.validate(data.value, data.id);
 
-    tempFormFields.forEach((field, index) => {
+    setErrors((prev) => ({ ...prev, [data.id]: errorInfo }));
+  };
+
+  const validateAllFields = (form: Array<IFormField | ContainerFormField>) => {
+    const newErrors: Record<string, ErrorDetailsType> = {};
+
+    form.forEach((field) => {
+      if ("fields" in field && Array.isArray(field.fields)) {
+        (field as ContainerFormField).fields.forEach((field) => {
+          const containerErrorInfo = field.validate(field.value, field.id);
+          newErrors[field.id] = containerErrorInfo;
+        });
+      }
+
+      if ("value" in field && "id" in field) {
+        const errorInfo = field.validate(field.value, field.id);
+        newErrors[field.id] = errorInfo;
+      }
+    });
+    return newErrors;
+  };
+
+  const handleFieldBlur = (data: IFormField) => {
+    validateFieldOnBlur(data);
+
+    const currentForm = [...allForms[formIndex]];
+
+    currentForm.forEach((field, index) => {
       if (Object.prototype.hasOwnProperty.call(field, "fields")) {
         let tempIndex: number;
 
@@ -73,82 +100,95 @@ const FormContainer = ({
 
         if (tempIndex !== -1) {
           (field as ContainerFormField).fields[tempIndex]["value"] = data.value;
-          tempFormFields[index] = field;
+          currentForm[index] = field;
           return;
         }
       } else if ((field as IFormField).id === data.id) {
-        (tempFormFields[index] as IFormField)["value"] = data.value;
+        (currentForm[index] as IFormField)["value"] = data.value;
         return;
       }
     });
-    setFormField(tempFormFields);
   };
-
-  const validateAllFields = (
-    formFieldsData: Array<IFormField | ContainerFormField>
-  ) => {
-    const newErrors: Record<string, ErrorDetailsType> = {};
-
-    formFieldsData.forEach((field) => {
-      console.log("field", field);
-      if ("fields" in field && Array.isArray(field.fields)) {
-        (field as ContainerFormField).fields.forEach((f) => {
-          const containerErrorInfo = f.validate(f.value, f.id);
-          newErrors[f.id] = containerErrorInfo;
-        });
-      }
-
-      if ("value" in field && "id" in field) {
-        const errorInfo = field.validate(field.value, field.id);
-        newErrors[field.id] = errorInfo;
-      }
-    });
-    console.log("newErrors", newErrors);
-    setError(newErrors);
-
-    // if (Object.values(newErrors).every((el) => el.isValid === true)) {
-    //   console.log(Object.values(newErrors));
-    // }
-  };
-
-  const handleSubmitOnFormNavigation = () => {
-    // handle submit when clicked navigation icon
-    updateFormIndex(formIndex === 0 ? 1 : 0);
-  };
-
-  //TODO: Move to top
-  const allForms = [firstFormData, secondFormData];
 
   const renderFormFields = () => {
-    const formdata = formValues ?? allForms[formIndex];
-    return formdata.map((field, index) => {
+    const formData = formValues ?? allForms[formIndex];
+    return formData.map((field, index) => {
       return getDynamicFields(field, index);
     });
   };
 
+  // update global form data
+  const updateGlobalFormData = (
+    formData: Array<IFormField | ContainerFormField>
+  ) => {
+    // Update global formValues by replacing only the current index
+    updateFormValues((prevFormValues: any) => {
+      const updatedFormValues = [...prevFormValues]; // copy the whole existing array
+      updatedFormValues[formIndex] = formData; // update the current index form into the global state
+      return updatedFormValues;
+    });
+  };
+
+  // handle submit when clicked navigation icon except the last form
+  const handleSubmitOnFormNavigation = () => {
+    const currentForm = [...allForms[formIndex]];
+
+    if (formIndex === 0) {
+      const errorDetails = validateAllFields(currentForm);
+      console.log("errorDetails@@@@@@@@@@@@@@@@@@", errorDetails);
+
+      setErrors(errorDetails);
+
+      const hasError = Object.values(errorDetails).some((e) => !e.isValid);
+      if (!hasError) {
+        updateGlobalFormData(currentForm);
+        updateFormIndex(1);
+      }
+    } else {
+      updateFormIndex(0);
+    }
+  };
+
+  // handle form submit and also validate each form before submission
   const onFormSubmit = () => {
-    console.log("submit");
+    const lastFormIndex = allForms.length - 1;
+    const lastForm = [...allForms[lastFormIndex]];
+
+    if (formIndex === lastFormIndex) {
+      const errorDetails = validateAllFields(lastForm);
+      console.log("errorDetails:: lastForm", errorDetails);
+
+      setErrors(errorDetails);
+
+      const hasError = Object.values(errorDetails).some((e) => !e.isValid);
+      if (!hasError) {
+        updateGlobalFormData(lastForm);
+      }
+    }
   };
 
   useEffect(() => {
-    console.log("formIndex", formIndex);
-    validateAllFields(allForms[formIndex]);
-  }, [formIndex]);
+    console.log("formValuespppppppppppppppppppppppp", formValues);
+  }, [formValues]);
 
   return (
     <div className={styles.formContainer}>
       <h1>{title}</h1>
       <p>Please fill up the details</p>
       <h3>{subTitle}</h3>
+
+      {/* render form fields */}
       {renderFormFields()}
+
       {/* Submit form */}
-      {formIndex === 1 && (
+      {formIndex === allForms.length - 1 && (
         <Button
           label="Submit"
           onClick={() => onFormSubmit()}
           disabled={false}
         />
       )}
+
       {/* navigate form */}
       <div
         className={styles.navigateIconWrapper}

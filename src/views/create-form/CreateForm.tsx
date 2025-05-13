@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
 import FormContainer from "../../components/form-container/FormContainer";
 import type {
@@ -13,6 +13,10 @@ const CreateForm = () => {
     Array<Array<IFormField | ContainerFormField>>
   >([]);
   const [formIndex, setFormIndex] = useState<number>(0);
+
+  useEffect(() => {
+    console.log("formValues22222222222", formValues.flat());
+  }, [formValues]);
 
   return (
     <div>
