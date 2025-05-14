@@ -12,7 +12,7 @@ export type IFormField = {
     id?: string,
   ) => {
     isValid: boolean;
-    errorMessage: string;
+    errorMsg: string;
   };
 };
 

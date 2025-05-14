@@ -1,15 +1,13 @@
 import { useState } from "react";
 import type { IFormField } from "../../interface/FormFieldType";
 import styles from "./FormField.module.css";
-import type { ErrorDetailsType } from "../../interface/ErrorType";
 
 type FormFieldProps = {
   field: IFormField;
-  errors: ErrorDetailsType;
   handleBlurEvent: any;
 };
 
-const FormField = ({ field, errors, handleBlurEvent }: FormFieldProps) => {
+const FormField = ({ field, handleBlurEvent }: FormFieldProps) => {
   const [fieldData, setFieldData] = useState<IFormField>({ ...field });
 
   const handleField = (event: any) => {
@@ -45,14 +43,14 @@ const FormField = ({ field, errors, handleBlurEvent }: FormFieldProps) => {
           placeholder={fieldData.placeholder}
           value={fieldData.value}
           checked={fieldData?.isChecked}
-          className={errors?.isValid === false ? styles.error_input : ""}
+          className={field?.isValid === false ? styles.error_input : ""}
           onChange={(event) => handleField(event)}
           onBlur={() => handleBlur()}
         />
       </div>
 
       <div className={styles.error_wrapper}>
-        <p>{errors && errors.errorMessage}</p>
+        <p>{field && field.errorMsg}</p>
       </div>
     </div>
   );

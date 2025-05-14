@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import type {
   ContainerFormField,
@@ -30,68 +30,41 @@ const FormContainer = ({
   navigateIcon
 }: FormContainerProps) => {
   const allForms = [firstFormData, secondFormData];
-  const [errors, setErrors] = useState<Record<string, ErrorDetailsType>>({});
-
-  const getDynamicFields = (
-    field: IFormField | ContainerFormField,
-    index: number
-  ) => {
-    if (Object.prototype.hasOwnProperty.call(field, "fields")) {
-      return (
-        <div className={styles.dynamicFieldWrapper} key={index}>
-          {(field as ContainerFormField).fields.map((subField, subIndex) => (
-            <FormField
-              key={subIndex}
-              field={subField}
-              errors={errors[subField.id]}
-              handleBlurEvent={handleFieldBlur}
-            />
-          ))}
-        </div>
-      );
-    }
-    return (
-      <FormField
-        key={index}
-        field={field as IFormField}
-        errors={errors[(field as IFormField).id]}
-        handleBlurEvent={handleFieldBlur}
-      />
-    );
-  };
-
-  const validateFieldOnBlur = (data: IFormField) => {
-    const errorInfo = data.validate(data.value, data.id);
-
-    setErrors((prev) => ({ ...prev, [data.id]: errorInfo }));
-  };
+  const [, setErrors] = useState<Record<string, ErrorDetailsType>>({});
 
   const validateAllFields = (form: Array<IFormField | ContainerFormField>) => {
     const newErrors: Record<string, ErrorDetailsType> = {};
 
     form.forEach((field) => {
       if ("fields" in field && Array.isArray(field.fields)) {
-        (field as ContainerFormField).fields.forEach((field) => {
-          const containerErrorInfo = field.validate(field.value, field.id);
-          newErrors[field.id] = containerErrorInfo;
+        (field as ContainerFormField).fields.forEach((subField) => {
+          const containerErrorInfo = subField.validate(
+            subField.value,
+            subField.id
+          );
+          newErrors[subField.id] = containerErrorInfo;
+          updateErrorStatus(subField, containerErrorInfo);
         });
       }
 
       if ("value" in field && "id" in field) {
         const errorInfo = field.validate(field.value, field.id);
         newErrors[field.id] = errorInfo;
+        updateErrorStatus(field, errorInfo);
       }
     });
     return newErrors;
   };
 
   const handleFieldBlur = (data: IFormField) => {
-    validateFieldOnBlur(data);
+    const errorInfo = data.validate(data.value, data.id);
+    updateErrorStatus(data, errorInfo);
+
+    setErrors((prev) => ({ ...prev, [data.id]: errorInfo }));
 
     const currentForm = [...allForms[formIndex]];
-
     currentForm.forEach((field, index) => {
-      if (Object.prototype.hasOwnProperty.call(field, "fields")) {
+      if ("fields" in field && Array.isArray(field.fields)) {
         let tempIndex: number;
 
         tempIndex = (field as ContainerFormField).fields.findIndex(
@@ -112,8 +85,58 @@ const FormContainer = ({
 
   const renderFormFields = () => {
     const formData = formValues ?? allForms[formIndex];
+
     return formData.map((field, index) => {
-      return getDynamicFields(field, index);
+      if ("fields" in field) {
+        return (
+          <div className={styles.dynamicFieldWrapper} key={index}>
+            {field.fields.map((subField, subIndex) => (
+              <FormField
+                key={subField.id || subIndex}
+                field={subField}
+                handleBlurEvent={handleFieldBlur}
+              />
+            ))}
+          </div>
+        );
+      }
+
+      return (
+        <FormField
+          key={field.id || index}
+          field={field}
+          handleBlurEvent={handleFieldBlur}
+        />
+      );
+    });
+  };
+
+  const updateErrorStatus = (data: IFormField, errorInfo: any) => {
+    console.log("errors", data, errorInfo);
+
+    const currentForm = [...allForms[formIndex]];
+
+    currentForm.forEach((field, index) => {
+      if ("fields" in field) {
+        let tempIndex: number;
+
+        tempIndex = (field as ContainerFormField).fields.findIndex(
+          (field: IFormField) => field.id === data.id
+        );
+
+        if (tempIndex !== -1) {
+          (field as ContainerFormField).fields[tempIndex]["isValid"] =
+            errorInfo.isValid;
+          (field as ContainerFormField).fields[tempIndex]["errorMsg"] =
+            errorInfo.errorMsg;
+          currentForm[index] = field;
+          return;
+        }
+      } else if ((field as IFormField).id === data.id) {
+        (currentForm[index] as IFormField)["isValid"] = errorInfo.isValid;
+        (currentForm[index] as IFormField)["errorMsg"] = errorInfo.errorMsg;
+        return;
+      }
     });
   };
 
@@ -123,9 +146,9 @@ const FormContainer = ({
   ) => {
     // Update global formValues by replacing only the current index
     updateFormValues((prevFormValues: any) => {
-      const updatedFormValues = [...prevFormValues]; // copy the whole existing array
-      updatedFormValues[formIndex] = formData; // update the current index form into the global state
-      return updatedFormValues;
+      const copyPrevData = [...prevFormValues];
+      copyPrevData[formIndex] = formData; // update the current index form into the global state
+      return copyPrevData;
     });
   };
 
@@ -135,7 +158,6 @@ const FormContainer = ({
 
     if (formIndex === 0) {
       const errorDetails = validateAllFields(currentForm);
-      console.log("errorDetails@@@@@@@@@@@@@@@@@@", errorDetails);
 
       setErrors(errorDetails);
 
@@ -165,11 +187,8 @@ const FormContainer = ({
         updateGlobalFormData(lastForm);
       }
     }
+    window.alert("Form submitted successfully")
   };
-
-  useEffect(() => {
-    console.log("formValuespppppppppppppppppppppppp", formValues);
-  }, [formValues]);
 
   return (
     <div className={styles.formContainer}>
